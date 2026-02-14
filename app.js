@@ -34,73 +34,56 @@ function App() {
         loadData();
     }, []);
 
-    const loadData = async () => {
+    const loadData = () => {
         try {
-            // Essayer de charger depuis le stockage persistant
-            if (window.storage) {
-                const [invoiceNumResult, invoicesResult, companyResult] = await Promise.all([
-                    window.storage.get('invoice-number', false).catch(() => null),
-                    window.storage.get('invoices-list', false).catch(() => null),
-                    window.storage.get('company-info', false).catch(() => null)
-                ]);
+            // Charger depuis localStorage
+            const invoiceNum = localStorage.getItem('invoice-number');
+            const invoicesList = localStorage.getItem('invoices-list');
+            const company = localStorage.getItem('company-info');
 
-                if (invoiceNumResult) {
-                    setCurrentInvoiceNumber(parseInt(invoiceNumResult.value));
-                }
-                if (invoicesResult) {
-                    setInvoices(JSON.parse(invoicesResult.value));
-                }
-                if (companyResult) {
-                    setCompanyInfo(JSON.parse(companyResult.value));
-                }
-            } else {
-                // Fallback sur localStorage si window.storage n'est pas disponible
-                const invoiceNum = localStorage.getItem('invoice-number');
-                const invoicesList = localStorage.getItem('invoices-list');
-                const company = localStorage.getItem('company-info');
-
-                if (invoiceNum) setCurrentInvoiceNumber(parseInt(invoiceNum));
-                if (invoicesList) setInvoices(JSON.parse(invoicesList));
-                if (company) setCompanyInfo(JSON.parse(company));
+            if (invoiceNum) {
+                setCurrentInvoiceNumber(parseInt(invoiceNum));
             }
+            if (invoicesList) {
+                setInvoices(JSON.parse(invoicesList));
+            }
+            if (company) {
+                setCompanyInfo(JSON.parse(company));
+            }
+            
+            console.log('Données chargées:', {
+                numeroFacture: invoiceNum,
+                nombreFactures: invoicesList ? JSON.parse(invoicesList).length : 0
+            });
         } catch (error) {
             console.log('Première utilisation - initialisation des données');
         }
         setLoading(false);
     };
 
-    const saveInvoiceNumber = async (num) => {
+    const saveInvoiceNumber = (num) => {
         try {
-            if (window.storage) {
-                await window.storage.set('invoice-number', num.toString(), false);
-            } else {
-                localStorage.setItem('invoice-number', num.toString());
-            }
+            localStorage.setItem('invoice-number', num.toString());
+            console.log('Numéro de facture sauvegardé:', num);
         } catch (error) {
             console.error('Erreur de sauvegarde:', error);
         }
     };
 
-    const saveInvoicesList = async (list) => {
+    const saveInvoicesList = (list) => {
         try {
-            if (window.storage) {
-                await window.storage.set('invoices-list', JSON.stringify(list), false);
-            } else {
-                localStorage.setItem('invoices-list', JSON.stringify(list));
-            }
+            localStorage.setItem('invoices-list', JSON.stringify(list));
+            console.log('Liste des factures sauvegardée:', list.length, 'factures');
         } catch (error) {
             console.error('Erreur de sauvegarde:', error);
         }
     };
 
-    const saveCompanyInfo = async (info) => {
+    const saveCompanyInfo = (info) => {
         try {
-            if (window.storage) {
-                await window.storage.set('company-info', JSON.stringify(info), false);
-            } else {
-                localStorage.setItem('company-info', JSON.stringify(info));
-            }
+            localStorage.setItem('company-info', JSON.stringify(info));
             setCompanyInfo(info);
+            console.log('Informations entreprise sauvegardées');
         } catch (error) {
             console.error('Erreur de sauvegarde:', error);
         }
@@ -295,7 +278,7 @@ function App() {
         return integer.toString();
     };
 
-    const saveInvoice = async () => {
+    const saveInvoice = () => {
         const totals = calculateTotals();
         const invoice = {
             number: currentInvoiceNumber,
@@ -316,11 +299,11 @@ function App() {
 
         const newInvoices = [invoice, ...invoices];
         setInvoices(newInvoices);
-        await saveInvoicesList(newInvoices);
+        saveInvoicesList(newInvoices);
         
         const newNumber = currentInvoiceNumber + 1;
         setCurrentInvoiceNumber(newNumber);
-        await saveInvoiceNumber(newNumber);
+        saveInvoiceNumber(newNumber);
 
         // Générer et télécharger le PDF
         const doc = generatePDF(invoice);
@@ -341,6 +324,8 @@ function App() {
             tvaRate: 19
         });
         setShowForm(false);
+        
+        alert('Facture enregistrée avec succès !');
     };
 
     const downloadInvoicePDF = (invoice) => {
@@ -348,21 +333,18 @@ function App() {
         doc.save(`Facture_FC${invoice.number}_${invoice.clientName.replace(/\s/g, '_')}.pdf`);
     };
 
-    const resetData = async () => {
+    const resetData = () => {
         if (confirm('Etes-vous sur de vouloir reinitialiser toutes les donnees ? Cette action est irreversible.')) {
             try {
-                if (window.storage) {
-                    await window.storage.delete('invoice-number', false);
-                    await window.storage.delete('invoices-list', false);
-                } else {
-                    localStorage.removeItem('invoice-number');
-                    localStorage.removeItem('invoices-list');
-                }
+                localStorage.removeItem('invoice-number');
+                localStorage.removeItem('invoices-list');
+                localStorage.removeItem('company-info');
                 setCurrentInvoiceNumber(1);
                 setInvoices([]);
                 alert('Donnees reinitialisees avec succes');
             } catch (error) {
                 console.error('Erreur:', error);
+                alert('Erreur lors de la reinitialisation');
             }
         }
     };
@@ -689,5 +671,4 @@ function App() {
     );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+ReactDOM.render(<App />, document.getElementById('root'));
