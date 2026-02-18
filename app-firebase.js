@@ -186,7 +186,7 @@ function App() {
 
         doc.setFontSize(14);
         doc.setFont(undefined, 'bold');
-        doc.text(`FACTURE N° : FC${invoice.number}`, pageWidth - 60, 20);
+        doc.text(`FACTURE N° : FACTURE-2026-${invoice.number}`, pageWidth - 60, 20);
         
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
