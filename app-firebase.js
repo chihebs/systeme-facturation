@@ -17,7 +17,7 @@ function App() {
         name: "Ste Walk",
         address: "Walk route Gabes km 7 cité el moez1 Sfax SUD, Sfax 3083",
         phone: "21 413 434",
-        codeTVA: "",
+        codeTVA: "1943182Z/A/M/000",
         rc: "",
         codeDouane: ""
     });
@@ -186,7 +186,7 @@ function App() {
 
         doc.setFontSize(14);
         doc.setFont(undefined, 'bold');
-        doc.text(`FACTURE N° : FACTURE-2026-${invoice.number}`, pageWidth - 60, 20);
+        doc.text(`FACTURE N° : FC${invoice.number}`, pageWidth - 60, 20);
         
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
@@ -299,19 +299,70 @@ function App() {
     };
 
     const numberToWords = (num) => {
-        const units = ['zero', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf'];
+        const units = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf'];
         const teens = ['dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
-        const tens = ['', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix'];
+        const tens = ['', 'dix', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix'];
+        
+        const convertUnder100 = (n) => {
+            if (n < 10) return units[n];
+            if (n < 20) return teens[n - 10];
+            const ten = Math.floor(n / 10);
+            const unit = n % 10;
+            if (unit === 0) return tens[ten];
+            if (unit === 1 && ten === 8) return 'quatre-vingt-un';
+            if (unit === 1 && ten !== 7 && ten !== 9) return tens[ten] + ' et un';
+            if (ten === 7) return 'soixante-' + teens[unit];
+            if (ten === 9) return 'quatre-vingt-' + teens[unit];
+            return tens[ten] + '-' + units[unit];
+        };
+        
+        const convertUnder1000 = (n) => {
+            if (n < 100) return convertUnder100(n);
+            const hundreds = Math.floor(n / 100);
+            const rest = n % 100;
+            let result = hundreds === 1 ? 'cent' : units[hundreds] + ' cent';
+            if (hundreds > 1 && rest === 0) result += 's';
+            if (rest > 0) result += ' ' + convertUnder100(rest);
+            return result;
+        };
         
         const integer = Math.floor(num);
-        if (integer < 10) return units[integer];
-        if (integer < 20) return teens[integer - 10];
-        if (integer < 100) {
-            const ten = Math.floor(integer / 10);
-            const unit = integer % 10;
-            return unit === 0 ? tens[ten] : `${tens[ten]}-${units[unit]}`;
+        const decimals = Math.round((num - integer) * 1000);
+        
+        if (integer === 0) return 'zero';
+        
+        let result = '';
+        
+        if (integer >= 1000000) {
+            const millions = Math.floor(integer / 1000000);
+            result += (millions === 1 ? 'un million' : convertUnder1000(millions) + ' millions') + ' ';
+            integer %= 1000000;
         }
-        return integer.toString();
+        
+        if (integer >= 1000) {
+            const thousands = Math.floor(integer / 1000);
+            if (thousands === 1) {
+                result += 'mille ';
+            } else {
+                result += convertUnder1000(thousands) + ' mille ';
+            }
+            integer %= 1000;
+        }
+        
+        if (integer > 0) {
+            result += convertUnder1000(integer);
+        }
+        
+        result = result.trim();
+        
+        // Ajouter les millimes si différents de zéro
+        if (decimals > 0) {
+            result += ' dinars et ' + decimals + ' millimes';
+        } else {
+            result += ' dinars';
+        }
+        
+        return result;
     };
 
     // Sauvegarder une nouvelle facture
