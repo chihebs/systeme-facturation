@@ -19,7 +19,7 @@ function App() {
         phone: "21 413 434",
         codeTVA: "1943182Z/A/M/000",
         rc: "",
-        codeDouane: ""
+        codeDouane: "1943182Z"
     });
 
     const [formData, setFormData] = useState({
@@ -895,21 +895,21 @@ function App() {
                                                         className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm"
                                                         title="Télécharger PDF"
                                                     >
-                                                        📄 PDF
+                                                        Imprimer PDF
                                                     </button>
                                                     <button
                                                         onClick={() => editInvoice(invoice)}
                                                         className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition text-sm"
                                                         title="Modifier"
                                                     >
-                                                        ✏️ Modifier
+                                                        Modifier
                                                     </button>
                                                     <button
                                                         onClick={() => deleteInvoice(invoice)}
                                                         className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm"
                                                         title="Supprimer"
                                                     >
-                                                        🗑️ Supprimer
+                                                        Supprimer
                                                     </button>
                                                 </div>
                                             </td>
