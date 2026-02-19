@@ -184,9 +184,12 @@ function App() {
         if (companyInfo.rc) doc.text(`R.C : ${companyInfo.rc}`, 20, 42);
         if (companyInfo.codeDouane) doc.text(`Code en douane : ${companyInfo.codeDouane}`, 20, 47);
 
-        doc.setFontSize(14);
+        doc.setFontSize(16);
         doc.setFont(undefined, 'bold');
-        doc.text(`FACTURE N° : FC${invoice.number}`, pageWidth - 60, 20);
+        const invoiceTitle = `FACTURE N° : FC-2026-${invoice.number}`;
+        const titleWidth = doc.getTextWidth(invoiceTitle);
+        const titleX = (pageWidth - titleWidth) / 2;
+        doc.text(invoiceTitle, titleX, 15);
         
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
@@ -884,7 +887,7 @@ function App() {
                                 <tbody>
                                     {invoices.map((invoice) => (
                                         <tr key={invoice.id} className="border-b hover:bg-gray-50">
-                                            <td className="px-4 py-3 font-semibold">FC{invoice.number}</td>
+                                            <td className="px-4 py-3 font-semibold">FACTURE-{invoice.number}</td>
                                             <td className="px-4 py-3">{new Date(invoice.date).toLocaleDateString('fr-FR')}</td>
                                             <td className="px-4 py-3">{invoice.clientName}</td>
                                             <td className="px-4 py-3 font-semibold text-blue-600">{invoice.totalTTC.toFixed(3)} TND</td>
